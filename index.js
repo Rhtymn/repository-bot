@@ -3,6 +3,9 @@ const qrcode = require("qrcode-terminal");
 const { Postgres } = require("./db/postgres");
 const { UsersRepository } = require("./repository/users");
 const { UsersUsecase } = require("./usecase/users");
+const { DirectoriesRepository } = require("./repository/directories");
+const { DirectoriesUsecase } = require("./usecase/directories");
+const { Internal } = require("./exceptions");
 
 const client = new Client({
   authStrategy: new LocalAuth(),
@@ -17,8 +20,14 @@ const postgres = new Postgres({
 });
 postgres.connect();
 
-const userRepository = new UsersRepository(postgres.client());
-const userUsecase = new UsersUsecase(userRepository);
+const usersRepository = new UsersRepository(postgres.client());
+const directoriesRepository = new DirectoriesRepository(postgres.client());
+
+const userUsecase = new UsersUsecase(usersRepository);
+const directoriesUsecase = new DirectoriesUsecase({
+  directoriesRepository,
+  usersRepository,
+});
 
 client.on("ready", () => {
   try {
@@ -46,11 +55,32 @@ client.on("message_create", async (message) => {
           await userUsecase.register(contact.number);
           client.sendMessage(message.from, "successfully registered!");
           break;
+        case "dir":
+          if (msg.length === 2) {
+          } else {
+            switch (msg[2]) {
+              case "add":
+                if (msg.length === 3) {
+                  client.sendMessage(message.from, "invalid command!");
+                } else {
+                  await directoriesUsecase.add(contact.number, msg[3]);
+                  client.sendMessage(message.from, "directories created");
+                }
+                break;
+              default:
+                client.sendMessage(message.from, "invalid command!");
+            }
+          }
+          break;
         default:
           client.sendMessage(message.from, "invalid command!");
       }
     } catch (e) {
-      client.sendMessage(message.from, e.message);
+      if (e instanceof Internal) {
+        client.sendMessage(message.from, "internal server error");
+      } else {
+        client.sendMessage(message.from, e.message);
+      }
     }
   }
 });
