@@ -42,7 +42,7 @@ class LinksRepository {
    *
    * @param {number} idDirectory
    * @param {string} title
-   * @returns {Link}
+   * @returns {Promise<Link> | undefined}
    */
   async getLinkByTitle(idDirectory, title) {
     try {
@@ -55,6 +55,40 @@ class LinksRepository {
       return (await this.#client.query(q, params)).rows[0];
     } catch (e) {
       throw new Internal("error get link");
+    }
+  }
+
+  /**
+   *
+   * @param {*} id
+   * @returns {Promise<Link> | undefined}
+   */
+  async getLinkById(id) {
+    try {
+      const q = `SELECT id, url, title, id_directory
+                    FROM links
+                  WHERE id = $1
+                    AND deleted_at IS NULL`;
+      const params = [id];
+      return (await this.#client.query(q, params)).rows[0];
+    } catch (e) {
+      throw new Internal("error get link");
+    }
+  }
+
+  /**
+   *
+   * @param {number} id
+   */
+  async softDeleteById(id) {
+    try {
+      const q = `UPDATE links
+                    SET deleted_at = now()
+                  WHERE id = $1`;
+      const params = [id];
+      this.#client.query(q, params);
+    } catch (e) {
+      throw new Internal("error soft delete link");
     }
   }
 }

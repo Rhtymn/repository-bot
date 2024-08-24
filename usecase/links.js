@@ -69,6 +69,10 @@ class LinksUsecase {
         throw new BadRequest("directory not found!");
       }
 
+      if (dir.id_user !== u.id) {
+        throw new BadRequest("directory not found!");
+      }
+
       const l = await this.#linksRepository.getLinkByTitle(dir.id, link.title);
 
       if (l) {
@@ -77,6 +81,37 @@ class LinksUsecase {
 
       link.id_directory = dir.id;
       await this.#linksRepository.save(link);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  /**
+   *
+   * @param {User} user
+   * @param {Link} link
+   */
+  async delete(user, link) {
+    try {
+      const u = await this.#usersRepository.getByPhoneNumber(user.phone_number);
+
+      if (!u) {
+        throw new Unauthorized("user not registered!");
+      }
+
+      const l = await this.#linksRepository.getLinkById(link.id);
+
+      if (!l) {
+        throw new BadRequest("link not found!");
+      }
+
+      const dir = await this.#directoriesRepository.getById(l.id_directory);
+
+      if (dir.id_user !== u.id) {
+        throw new BadRequest("link not found!");
+      }
+
+      await this.#linksRepository.softDeleteById(l.id);
     } catch (e) {
       throw e;
     }

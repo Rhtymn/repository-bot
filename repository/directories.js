@@ -74,6 +74,24 @@ class DirectoriesRepository {
 
   /**
    *
+   * @param {number} id
+   * @returns {Promise<Directory> | undefined}
+   */
+  async getById(id) {
+    try {
+      const q = `SELECT id, title, id_user
+                    FROM directories
+                  WHERE id = $1
+                    AND deleted_at IS NULL`;
+      const params = [id];
+      return (await this.#client.query(q, params)).rows[0];
+    } catch (e) {
+      throw new Error("error get directory");
+    }
+  }
+
+  /**
+   *
    * @param {number} idUser
    * @param {string} title
    */

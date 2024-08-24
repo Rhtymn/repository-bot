@@ -50,7 +50,7 @@ client.on("qr", (qr) => {
 client.on("message_create", async (message) => {
   if (message.body.startsWith("!repo")) {
     try {
-      const msg = message.body.trim().split(" ");
+      const msg = message.body.split(" ").map((str) => str.trim());
 
       if (msg.length === 1) {
         client.sendMessage(message.from, "invalid command!");
@@ -111,9 +111,11 @@ client.on("message_create", async (message) => {
         case "link":
           if (msg.length === 2) {
           } else {
+            let link;
             switch (msg[2]) {
               case "add":
-                if (msg.length < 5) {
+                console.log(msg);
+                if (msg.length < 6) {
                   client.sendMessage(message.from, "invalid command!");
                   break;
                 }
@@ -126,7 +128,7 @@ client.on("message_create", async (message) => {
 
                 titleStr = titleStr.slice(1, titleStr.length - 1);
                 const dir = { title: msg[3] };
-                const link = {
+                link = {
                   url: msg[4],
                   title: titleStr,
                 };
@@ -134,6 +136,21 @@ client.on("message_create", async (message) => {
                 await linksUsecase.save(user, dir, link);
                 client.sendMessage(message.from, "link saved");
 
+                break;
+              case "delete":
+                if (msg.length !== 4) {
+                  client.sendMessage(message.from, "invalid command!");
+                  break;
+                }
+
+                if (!msg[3].startsWith("#")) {
+                  client.sendMessage(message.from, "invalid link id!");
+                  break;
+                }
+
+                link = { id: msg[3].slice(1) };
+                await linksUsecase.delete(user, link);
+                client.sendMessage(message.from, "link deleted");
                 break;
               default:
                 client.sendMessage(message.from, "invalid command!");

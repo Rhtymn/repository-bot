@@ -52,7 +52,7 @@ class DirectoriesUsecase {
         directory.title
       );
 
-      if (dir) {
+      if (dir && dir.id_user === u.id) {
         throw new BadRequest("directory already created!");
       }
 
@@ -81,6 +81,10 @@ class DirectoriesUsecase {
       );
 
       if (!dir) {
+        throw new BadRequest("directory not found!");
+      }
+
+      if (dir.id_user !== u.id) {
         throw new BadRequest("directory not found!");
       }
 
@@ -113,6 +117,10 @@ class DirectoriesUsecase {
       );
 
       if (!dir) {
+        throw new BadRequest("directory not found!");
+      }
+
+      if (dir.id_user !== u.id) {
         throw new BadRequest("directory not found!");
       }
 
