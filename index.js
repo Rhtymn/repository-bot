@@ -111,16 +111,15 @@ client.on("message_create", async (message) => {
         case "link":
           if (msg.length === 2) {
           } else {
-            let link;
+            let link, titleStr;
             switch (msg[2]) {
               case "add":
-                console.log(msg);
                 if (msg.length < 6) {
                   client.sendMessage(message.from, "invalid command!");
                   break;
                 }
 
-                let titleStr = msg.slice(5).join(" ");
+                titleStr = msg.slice(5).join(" ");
                 if (!titleStr.startsWith(`"`) || !titleStr.endsWith(`"`)) {
                   client.sendMessage(message.from, "invalid command!");
                   break;
@@ -151,6 +150,39 @@ client.on("message_create", async (message) => {
                 link = { id: msg[3].slice(1) };
                 await linksUsecase.delete(user, link);
                 client.sendMessage(message.from, "link deleted");
+                break;
+              case "update":
+                console.log(msg);
+                if (msg.length < 6) {
+                  client.sendMessage(message.from, "invalid command!");
+                  break;
+                }
+
+                if (!msg[3].startsWith("#")) {
+                  client.sendMessage(message.from, "invalid link id!");
+                  break;
+                }
+
+                if (msg[5] !== "-") {
+                  titleStr = msg.slice(5).join(" ");
+                  if (!titleStr.startsWith(`"`) || !titleStr.endsWith(`"`)) {
+                    client.sendMessage(message.from, "invalid command!");
+                    break;
+                  }
+                  console.log(titleStr);
+                  titleStr = titleStr.slice(1, titleStr.length - 1);
+                } else {
+                  titleStr = msg[5];
+                }
+
+                link = {
+                  id: msg[3].slice(1),
+                  url: msg[4],
+                  title: titleStr,
+                };
+
+                await linksUsecase.update(user, link);
+                client.sendMessage(message.from, "link updated!");
                 break;
               default:
                 client.sendMessage(message.from, "invalid command!");

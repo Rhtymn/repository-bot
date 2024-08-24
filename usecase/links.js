@@ -116,6 +116,44 @@ class LinksUsecase {
       throw e;
     }
   }
+
+  /**
+   *
+   * @param {User} user
+   * @param {Link} link
+   */
+  async update(user, link) {
+    try {
+      const u = await this.#usersRepository.getByPhoneNumber(user.phone_number);
+
+      if (!u) {
+        throw new Unauthorized("user not registered!");
+      }
+
+      const l = await this.#linksRepository.getLinkById(link.id);
+
+      if (!l) {
+        throw new BadRequest("link not found!");
+      }
+
+      const dir = await this.#directoriesRepository.getById(l.id_directory);
+
+      if (dir.id_user !== u.id) {
+        throw new BadRequest("link not found!");
+      }
+
+      if (link.title === "-" && link.url === "-") {
+        return;
+      }
+
+      if (link.title !== "-") l.title = link.title;
+      if (link.url !== "-") l.url = link.url;
+
+      await this.#linksRepository.update(l);
+    } catch (e) {
+      throw e;
+    }
+  }
 }
 
 module.exports = { LinksUsecase };

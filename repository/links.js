@@ -91,6 +91,23 @@ class LinksRepository {
       throw new Internal("error soft delete link");
     }
   }
+
+  /**
+   *
+   * @param {Link} link
+   */
+  async update(link) {
+    try {
+      const q = `UPDATE links 
+                    SET url = $1,
+                      title = $2
+                    WHERE id = $3`;
+      const params = [link.url, link.title, link.id];
+      await this.#client.query(q, params);
+    } catch (e) {
+      throw new Internal("error updating link");
+    }
+  }
 }
 
 module.exports = { LinksRepository };
