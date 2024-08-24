@@ -14,7 +14,7 @@ CREATE TABLE users (
 
 CREATE TABLE directories (
 	id BIGSERIAL PRIMARY KEY,
-	title VARCHAR NOT NULL UNIQUE,
+	title VARCHAR NOT NULL,
 	created_at TIMESTAMP NOT NULL DEFAULT now(),
 	updated_at TIMESTAMP NOT NULL DEFAULT now(),
 	deleted_at TIMESTAMP,
