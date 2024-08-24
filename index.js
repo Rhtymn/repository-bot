@@ -6,6 +6,8 @@ const { UsersUsecase } = require("./usecase/users");
 const { DirectoriesRepository } = require("./repository/directories");
 const { DirectoriesUsecase } = require("./usecase/directories");
 const { Internal } = require("./exceptions");
+const { LinksRepository } = require("./repository/links");
+const { LinksUsecase } = require("./usecase/links");
 
 const client = new Client({
   authStrategy: new LocalAuth(),
@@ -22,11 +24,17 @@ postgres.connect();
 
 const usersRepository = new UsersRepository(postgres.client());
 const directoriesRepository = new DirectoriesRepository(postgres.client());
+const linksRepository = new LinksRepository(postgres.client());
 
 const userUsecase = new UsersUsecase(usersRepository);
 const directoriesUsecase = new DirectoriesUsecase({
   directoriesRepository,
   usersRepository,
+});
+const linksUsecase = new LinksUsecase({
+  linksRepository,
+  usersRepository,
+  directoriesRepository,
 });
 
 client.on("ready", () => {
@@ -49,6 +57,7 @@ client.on("message_create", async (message) => {
       }
 
       const contact = await message.getContact();
+      const user = { phone_number: contact.number };
 
       switch (msg[1]) {
         case "register":
@@ -56,8 +65,6 @@ client.on("message_create", async (message) => {
           client.sendMessage(message.from, "successfully registered!");
           break;
         case "dir":
-          const user = { phone_number: contact.number };
-
           if (msg.length === 2) {
             const directories = await directoriesUsecase.getDirectories(user);
             let responseMsg = "Directories:";
@@ -95,6 +102,38 @@ client.on("message_create", async (message) => {
                   await directoriesUsecase.update(user, dir, msg[4]);
                   client.sendMessage(message.from, "directory updated");
                 }
+                break;
+              default:
+                client.sendMessage(message.from, "invalid command!");
+            }
+          }
+          break;
+        case "link":
+          if (msg.length === 2) {
+          } else {
+            switch (msg[2]) {
+              case "add":
+                if (msg.length < 5) {
+                  client.sendMessage(message.from, "invalid command!");
+                  break;
+                }
+
+                let titleStr = msg.slice(5).join(" ");
+                if (!titleStr.startsWith(`"`) || !titleStr.endsWith(`"`)) {
+                  client.sendMessage(message.from, "invalid command!");
+                  break;
+                }
+
+                titleStr = titleStr.slice(1, titleStr.length - 1);
+                const dir = { title: msg[3] };
+                const link = {
+                  url: msg[4],
+                  title: titleStr,
+                };
+
+                await linksUsecase.save(user, dir, link);
+                client.sendMessage(message.from, "link saved");
+
                 break;
               default:
                 client.sendMessage(message.from, "invalid command!");
