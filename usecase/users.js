@@ -1,8 +1,9 @@
+const { BadRequest } = require("../exceptions");
 const { UsersRepository } = require("../repository/users");
 
 class UsersUsecase {
   /**
-   * postgres client
+   * user repository
    * @type { UsersRepository }
    */
   #userRepository;
@@ -23,7 +24,7 @@ class UsersUsecase {
     try {
       const users = await this.#userRepository.getByPhoneNumber(phoneNumber);
       if (users) {
-        throw new Error("already registered!");
+        throw new BadRequest("already registered!");
       }
 
       await this.#userRepository.save(phoneNumber);

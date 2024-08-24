@@ -1,4 +1,5 @@
 const { Client } = require("pg");
+const { Internal } = require("../exceptions");
 
 class UsersRepository {
   /**
@@ -25,7 +26,7 @@ class UsersRepository {
       const params = [phoneNumber];
       await this.#client.query(q, params);
     } catch (e) {
-      throw new Error("error creating users");
+      throw new Internal("error creating users");
     }
   }
 
@@ -36,11 +37,14 @@ class UsersRepository {
    */
   async getByPhoneNumber(phoneNumber) {
     try {
-      const q = `SELECT id, phone_number FROM users WHERE phone_number = $1`;
+      const q = `SELECT id, phone_number FROM users 
+                  WHERE phone_number = $1
+                    AND deleted_at IS NULL`;
       const params = [phoneNumber];
       return (await this.#client.query(q, params)).rows[0];
     } catch (e) {
-      throw new Error("error get users");
+      console.log(e);
+      throw new Internal("error get users");
     }
   }
 }
