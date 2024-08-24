@@ -43,7 +43,6 @@ class UsersRepository {
       const params = [phoneNumber];
       return (await this.#client.query(q, params)).rows[0];
     } catch (e) {
-      console.log(e);
       throw new Internal("error get users");
     }
   }

@@ -126,6 +126,25 @@ class DirectoriesUsecase {
       throw e;
     }
   }
+
+  /**
+   *
+   * @param {User} user
+   * @returns {Directory[]}
+   */
+  async getDirectories(user) {
+    try {
+      const u = await this.#usersRepository.getByPhoneNumber(user.phone_number);
+
+      if (!u) {
+        throw new Unauthorized("user not registered!");
+      }
+
+      return await this.#directoriesRepository.getAll(u.id);
+    } catch (e) {
+      throw e;
+    }
+  }
 }
 
 module.exports = { DirectoriesUsecase };

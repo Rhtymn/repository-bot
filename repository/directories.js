@@ -1,6 +1,10 @@
 const { Client } = require("pg");
 const { Internal } = require("../exceptions");
 
+/**
+ * @typedef {{ id:number, title:string, id_user:number }} Directory
+ */
+
 class DirectoriesRepository {
   /**
    * postgres client
@@ -35,7 +39,7 @@ class DirectoriesRepository {
    *
    * @param {number} idUser
    * @param {string} title
-   * @returns {{ id: number, title: string, id_user: number } | undefined}
+   * @returns {Directory | undefined}
    */
   async getByTitle(idUser, title) {
     try {
@@ -47,6 +51,24 @@ class DirectoriesRepository {
       return (await this.#client.query(q, params)).rows[0];
     } catch (e) {
       throw new Internal("error getting directory");
+    }
+  }
+
+  /**
+   *
+   * @param {number} idUser
+   * @returns {Directory[] | undefined}
+   */
+  async getAll(idUser) {
+    try {
+      const q = `SELECT id, title, id_user 
+                  FROM directories
+                 WHERE id_user = $1 
+                  AND deleted_at IS NULL`;
+      const params = [idUser];
+      return (await this.#client.query(q, params)).rows;
+    } catch (e) {
+      throw new Internal("error get directories");
     }
   }
 

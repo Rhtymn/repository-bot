@@ -42,7 +42,7 @@ client.on("qr", (qr) => {
 client.on("message_create", async (message) => {
   if (message.body.startsWith("!repo")) {
     try {
-      const msg = message.body.split(" ");
+      const msg = message.body.trim().split(" ");
 
       if (msg.length === 1) {
         client.sendMessage(message.from, "invalid command!");
@@ -56,9 +56,18 @@ client.on("message_create", async (message) => {
           client.sendMessage(message.from, "successfully registered!");
           break;
         case "dir":
+          const user = { phone_number: contact.number };
+
           if (msg.length === 2) {
+            const directories = await directoriesUsecase.getDirectories(user);
+            let responseMsg = "Directories:";
+
+            for (let i = 0; i < directories.length; i++) {
+              responseMsg += `\n${i + 1}. ${directories[i].title}`;
+            }
+
+            client.sendMessage(message.from, responseMsg);
           } else {
-            const user = { phone_number: contact.number };
             const dir = { title: msg[3] };
 
             switch (msg[2]) {
