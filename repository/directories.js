@@ -64,8 +64,25 @@ class DirectoriesRepository {
       const params = [idUser, title];
       await this.#client.query(q, params);
     } catch (e) {
-      console.log(e);
       throw new Internal("error soft delete directory");
+    }
+  }
+
+  /**
+   *
+   * @param {{ id:number, title:string, id_user:number }} directory
+   */
+  async update(directory, newTitle) {
+    try {
+      const q = `UPDATE directories
+                  SET title = $1,
+                      updated_at = now()
+                 WHERE id_user = $2 
+                    AND title = $3`;
+      const params = [newTitle, directory.id_user, directory.title];
+      this.#client.query(q, params);
+    } catch (e) {
+      throw new Internal("error updating directory");
     }
   }
 }

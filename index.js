@@ -58,21 +58,33 @@ client.on("message_create", async (message) => {
         case "dir":
           if (msg.length === 2) {
           } else {
+            const user = { phone_number: contact.number };
+            const dir = { title: msg[3] };
+
             switch (msg[2]) {
               case "add":
-                if (msg.length === 3) {
+                if (msg.length != 4) {
                   client.sendMessage(message.from, "invalid command!");
                 } else {
-                  await directoriesUsecase.add(contact.number, msg[3]);
+                  await directoriesUsecase.add(user, dir);
                   client.sendMessage(message.from, "directory created");
                 }
                 break;
               case "delete":
-                if (msg.length === 3) {
+                if (msg.length != 4) {
                   client.sendMessage(message.from, "invalid command!");
                 } else {
-                  await directoriesUsecase.delete(contact.number, msg[3]);
+                  await directoriesUsecase.delete(user, dir);
                   client.sendMessage(message.from, "directory deleted");
+                }
+                break;
+              case "update":
+                if (msg.length != 5) {
+                  client.sendMessage(message.from, "invalid command!");
+                } else {
+                  const dir = { title: msg[3] };
+                  await directoriesUsecase.update(user, dir, msg[4]);
+                  client.sendMessage(message.from, "directory updated");
                 }
                 break;
               default:
