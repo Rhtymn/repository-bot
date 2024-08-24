@@ -78,6 +78,16 @@ client.on("message_create", async (message) => {
             const dir = { title: msg[3] };
 
             switch (msg[2]) {
+              case "show":
+                const links = await linksUsecase.getAll(user, dir);
+                let responseMsg = "Links:";
+
+                for (let i = 0; i < links.length; i++) {
+                  responseMsg += `\n#${links[i].id} ${links[i].url} (${links[i].title})`;
+                }
+
+                client.sendMessage(message.from, responseMsg);
+                break;
               case "add":
                 if (msg.length != 4) {
                   client.sendMessage(message.from, "invalid command!");
@@ -110,84 +120,85 @@ client.on("message_create", async (message) => {
           break;
         case "link":
           if (msg.length === 2) {
-          } else {
-            let link, titleStr;
-            switch (msg[2]) {
-              case "add":
-                if (msg.length < 6) {
-                  client.sendMessage(message.from, "invalid command!");
-                  break;
-                }
+            client.sendMessage(message.from, "invalid command!");
+            break;
+          }
+          let link, titleStr;
+          switch (msg[2]) {
+            case "add":
+              if (msg.length < 6) {
+                client.sendMessage(message.from, "invalid command!");
+                break;
+              }
 
+              titleStr = msg.slice(5).join(" ");
+              if (!titleStr.startsWith(`"`) || !titleStr.endsWith(`"`)) {
+                client.sendMessage(message.from, "invalid command!");
+                break;
+              }
+
+              titleStr = titleStr.slice(1, titleStr.length - 1);
+              const dir = { title: msg[3] };
+              link = {
+                url: msg[4],
+                title: titleStr,
+              };
+
+              await linksUsecase.save(user, dir, link);
+              client.sendMessage(message.from, "link saved");
+
+              break;
+            case "delete":
+              if (msg.length !== 4) {
+                client.sendMessage(message.from, "invalid command!");
+                break;
+              }
+
+              if (!msg[3].startsWith("#")) {
+                client.sendMessage(message.from, "invalid link id!");
+                break;
+              }
+
+              link = { id: msg[3].slice(1) };
+              await linksUsecase.delete(user, link);
+              client.sendMessage(message.from, "link deleted");
+              break;
+            case "update":
+              if (msg.length < 6) {
+                client.sendMessage(message.from, "invalid command!");
+                break;
+              }
+
+              if (!msg[3].startsWith("#")) {
+                client.sendMessage(message.from, "invalid link id!");
+                break;
+              }
+
+              if (msg[5] !== "-") {
                 titleStr = msg.slice(5).join(" ");
                 if (!titleStr.startsWith(`"`) || !titleStr.endsWith(`"`)) {
                   client.sendMessage(message.from, "invalid command!");
                   break;
                 }
-
+                console.log(titleStr);
                 titleStr = titleStr.slice(1, titleStr.length - 1);
-                const dir = { title: msg[3] };
-                link = {
-                  url: msg[4],
-                  title: titleStr,
-                };
+              } else {
+                titleStr = msg[5];
+              }
 
-                await linksUsecase.save(user, dir, link);
-                client.sendMessage(message.from, "link saved");
+              link = {
+                id: msg[3].slice(1),
+                url: msg[4],
+                title: titleStr,
+              };
 
-                break;
-              case "delete":
-                if (msg.length !== 4) {
-                  client.sendMessage(message.from, "invalid command!");
-                  break;
-                }
-
-                if (!msg[3].startsWith("#")) {
-                  client.sendMessage(message.from, "invalid link id!");
-                  break;
-                }
-
-                link = { id: msg[3].slice(1) };
-                await linksUsecase.delete(user, link);
-                client.sendMessage(message.from, "link deleted");
-                break;
-              case "update":
-                console.log(msg);
-                if (msg.length < 6) {
-                  client.sendMessage(message.from, "invalid command!");
-                  break;
-                }
-
-                if (!msg[3].startsWith("#")) {
-                  client.sendMessage(message.from, "invalid link id!");
-                  break;
-                }
-
-                if (msg[5] !== "-") {
-                  titleStr = msg.slice(5).join(" ");
-                  if (!titleStr.startsWith(`"`) || !titleStr.endsWith(`"`)) {
-                    client.sendMessage(message.from, "invalid command!");
-                    break;
-                  }
-                  console.log(titleStr);
-                  titleStr = titleStr.slice(1, titleStr.length - 1);
-                } else {
-                  titleStr = msg[5];
-                }
-
-                link = {
-                  id: msg[3].slice(1),
-                  url: msg[4],
-                  title: titleStr,
-                };
-
-                await linksUsecase.update(user, link);
-                client.sendMessage(message.from, "link updated!");
-                break;
-              default:
-                client.sendMessage(message.from, "invalid command!");
-            }
+              await linksUsecase.update(user, link);
+              client.sendMessage(message.from, "link updated!");
+              break;
+            default:
+              client.sendMessage(message.from, "invalid command!");
           }
+
           break;
         default:
           client.sendMessage(message.from, "invalid command!");

@@ -50,6 +50,39 @@ class LinksUsecase {
    *
    * @param {User} user
    * @param {Directory} directory
+   * @returns {Promise<Link[]> | undefined}
+   */
+  async getAll(user, directory) {
+    try {
+      const u = await this.#usersRepository.getByPhoneNumber(user.phone_number);
+
+      if (!u) {
+        throw new Unauthorized("user not registered!");
+      }
+
+      const dir = await this.#directoriesRepository.getByTitle(
+        u.id,
+        directory.title
+      );
+
+      if (!dir) {
+        throw new BadRequest("directory not found!");
+      }
+
+      if (dir.id_user !== u.id) {
+        throw new BadRequest("directory not found!");
+      }
+
+      return await this.#linksRepository.getAll(dir.id);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  /**
+   *
+   * @param {User} user
+   * @param {Directory} directory
    * @param {Link} link
    */
   async save(user, directory, link) {

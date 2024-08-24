@@ -78,6 +78,24 @@ class LinksRepository {
 
   /**
    *
+   * @param {number} idDirectory
+   * @returns {Promise<Link[]> | undefined}
+   */
+  async getAll(idDirectory) {
+    try {
+      const q = `SELECT id, url, title, id_directory
+                    FROM links
+                  WHERE id_directory = $1
+                    AND deleted_at IS NULL`;
+      const params = [idDirectory];
+      return (await this.#client.query(q, params)).rows;
+    } catch (e) {
+      throw new Internal("error get links");
+    }
+  }
+
+  /**
+   *
    * @param {number} id
    */
   async softDeleteById(id) {
