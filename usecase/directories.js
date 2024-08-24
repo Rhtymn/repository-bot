@@ -43,10 +43,35 @@ class DirectoriesUsecase {
       const dir = await this.#directoriesRepository.getByTitle(users.id, title);
 
       if (dir) {
-        throw new BadRequest("directory already created");
+        throw new BadRequest("directory already created!");
       }
 
       await this.#directoriesRepository.save(users.id, title);
+    } catch (e) {
+      throw e;
+    }
+  }
+
+  /**
+   *
+   * @param {string} phoneNumber
+   * @param {string} title
+   */
+  async delete(phoneNumber, title) {
+    try {
+      const users = await this.#usersRepository.getByPhoneNumber(phoneNumber);
+
+      if (!users) {
+        throw new Unauthorized("user not registered!");
+      }
+
+      const dir = await this.#directoriesRepository.getByTitle(users.id, title);
+
+      if (!dir) {
+        throw new BadRequest("directory not found!");
+      }
+
+      await this.#directoriesRepository.softDeleteByTitle(users.id, title);
     } catch (e) {
       throw e;
     }

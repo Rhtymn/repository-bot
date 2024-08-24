@@ -64,7 +64,15 @@ client.on("message_create", async (message) => {
                   client.sendMessage(message.from, "invalid command!");
                 } else {
                   await directoriesUsecase.add(contact.number, msg[3]);
-                  client.sendMessage(message.from, "directories created");
+                  client.sendMessage(message.from, "directory created");
+                }
+                break;
+              case "delete":
+                if (msg.length === 3) {
+                  client.sendMessage(message.from, "invalid command!");
+                } else {
+                  await directoriesUsecase.delete(contact.number, msg[3]);
+                  client.sendMessage(message.from, "directory deleted");
                 }
                 break;
               default:

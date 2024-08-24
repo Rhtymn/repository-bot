@@ -49,6 +49,25 @@ class DirectoriesRepository {
       throw new Internal("error getting directory");
     }
   }
+
+  /**
+   *
+   * @param {number} idUser
+   * @param {string} title
+   */
+  async softDeleteByTitle(idUser, title) {
+    try {
+      const q = `UPDATE directories
+                  SET deleted_at = now()
+                 WHERE id_user = $1
+                  AND title = $2`;
+      const params = [idUser, title];
+      await this.#client.query(q, params);
+    } catch (e) {
+      console.log(e);
+      throw new Internal("error soft delete directory");
+    }
+  }
 }
 
 module.exports = { DirectoriesRepository };
