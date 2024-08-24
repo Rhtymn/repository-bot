@@ -180,7 +180,6 @@ client.on("message_create", async (message) => {
                   client.sendMessage(message.from, "invalid command!");
                   break;
                 }
-                console.log(titleStr);
                 titleStr = titleStr.slice(1, titleStr.length - 1);
               } else {
                 titleStr = msg[5];
