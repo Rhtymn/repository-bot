@@ -9,11 +9,11 @@ const client = new Client({
 });
 
 const postgres = new Postgres({
-  user: "postgres",
-  password: "password",
-  host: "localhost",
-  port: 9001,
-  database: "db_repositoryapp",
+  user: process.env.POSTGRES_USER,
+  password: process.env.POSTGRES_PASSWORD,
+  host: process.env.POSTGRES_HOST,
+  port: process.env.POSTGRES_PORT,
+  database: process.env.POSTGRES_DB,
 });
 postgres.connect();
 
