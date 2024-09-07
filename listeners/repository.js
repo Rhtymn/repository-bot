@@ -9,6 +9,7 @@ const { UsersUsecase } = require("../usecase/users");
 const { Transactor } = require("../utils/transactor");
 const { Internal } = require("../exceptions");
 const { isURL } = require("../utils/validator");
+const { commandsInfo } = require("../constants/messages");
 
 class RepositoryListener {
   /**
@@ -67,6 +68,9 @@ class RepositoryListener {
       const user = { phone_number: contact.number };
 
       switch (msg[1]) {
+        case "commands":
+          client.sendMessage(message.from, `Commands List:\n${commandsInfo}`);
+          break;
         case "register":
           await this.#userUsecase.register(contact.number);
           client.sendMessage(message.from, "successfully registered!");
