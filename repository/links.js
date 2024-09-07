@@ -7,6 +7,9 @@ const { Internal } = require("../exceptions");
 /**
  * @typedef {{ id: number, phone_number: string }} User
  */
+/**
+ * @typedef {{ id: number, title:string, id_user: number }} Directory
+ */
 
 class LinksRepository {
   /**
@@ -107,6 +110,23 @@ class LinksRepository {
       this.#client.query(q, params);
     } catch (e) {
       throw new Internal("error soft delete link");
+    }
+  }
+
+  /**
+   *
+   * @param {number} idDirectory
+   */
+  async softBatchDeleteByDirectory(idDirectory) {
+    try {
+      const q = `UPDATE links
+                    SET deleted_at = now()
+                  WHERE id_directory = $1
+                    AND deleted_at IS NULL`;
+      const params = [idDirectory];
+      this.#client.query(q, params);
+    } catch (e) {
+      throw new Internal("error batch delete links");
     }
   }
 

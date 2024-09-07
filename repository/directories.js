@@ -118,7 +118,8 @@ class DirectoriesRepository {
                   SET title = $1,
                       updated_at = now()
                  WHERE id_user = $2 
-                    AND title = $3`;
+                    AND title = $3
+                    AND deleted_at IS NULL`;
       const params = [newTitle, directory.id_user, directory.title];
       this.#client.query(q, params);
     } catch (e) {

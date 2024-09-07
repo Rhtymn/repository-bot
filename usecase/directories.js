@@ -1,6 +1,8 @@
 const { Unauthorized, BadRequest } = require("../exceptions");
 const { DirectoriesRepository } = require("../repository/directories");
 const { UsersRepository } = require("../repository/users");
+const { LinksRepository } = require("../repository/links");
+const { Transactor } = require("../utils/transactor");
 
 /**
  * @typedef {{ id: number, title:string, id_user: number }} Directory
@@ -17,21 +19,36 @@ class DirectoriesUsecase {
   #directoriesRepository;
 
   /**
-   * directory repository
+   * user repository
    * @type { UsersRepository }
    */
   #usersRepository;
+
+  /**
+   * link repository
+   * @type { LinksRepository }
+   */
+  #linksRepository;
+
+  /**
+   * @type { Transactor }
+   */
+  #transactor;
 
   /**
    *
    * @param {{
    *    directoriesRepository: DirectoriesRepository,
    *    usersRepository: UsersRepository
+   *    linksRepository: LinksRepository
+   *    transactor: Transactor
    * }} opts
    */
   constructor(opts) {
     this.#directoriesRepository = opts.directoriesRepository;
     this.#usersRepository = opts.usersRepository;
+    this.#linksRepository = opts.linksRepository;
+    this.#transactor = opts.transactor;
   }
 
   /**
@@ -69,29 +86,35 @@ class DirectoriesUsecase {
    */
   async delete(user, directory) {
     try {
-      const u = await this.#usersRepository.getByPhoneNumber(user.phone_number);
+      await this.#transactor.withinTransaction(async () => {
+        const u = await this.#usersRepository.getByPhoneNumber(
+          user.phone_number
+        );
 
-      if (!u) {
-        throw new Unauthorized("user not registered!");
-      }
+        if (!u) {
+          throw new Unauthorized("user not registered!");
+        }
 
-      const dir = await this.#directoriesRepository.getByTitle(
-        u.id,
-        directory.title
-      );
+        const dir = await this.#directoriesRepository.getByTitle(
+          u.id,
+          directory.title
+        );
 
-      if (!dir) {
-        throw new BadRequest("directory not found!");
-      }
+        if (!dir) {
+          throw new BadRequest("directory not found!");
+        }
 
-      if (dir.id_user !== u.id) {
-        throw new BadRequest("directory not found!");
-      }
+        if (dir.id_user !== u.id) {
+          throw new BadRequest("directory not found!");
+        }
 
-      await this.#directoriesRepository.softDeleteByTitle(
-        u.id,
-        directory.title
-      );
+        await this.#directoriesRepository.softDeleteByTitle(
+          u.id,
+          directory.title
+        );
+
+        await this.#linksRepository.softBatchDeleteByDirectory(dir.id);
+      });
     } catch (e) {
       throw e;
     }
