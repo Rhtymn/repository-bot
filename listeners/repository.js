@@ -8,6 +8,7 @@ const { LinksUsecase } = require("../usecase/links");
 const { UsersUsecase } = require("../usecase/users");
 const { Transactor } = require("../utils/transactor");
 const { Internal } = require("../exceptions");
+const { isURL } = require("../utils/validator");
 
 class RepositoryListener {
   /**
@@ -141,6 +142,11 @@ class RepositoryListener {
             case "add":
               if (msg.length < 6) {
                 client.sendMessage(message.from, "invalid command!");
+                break;
+              }
+
+              if (!isURL(msg[4])) {
+                client.sendMessage(message.from, "invalid url!");
                 break;
               }
 
